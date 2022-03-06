@@ -23,7 +23,8 @@ module.exports = (app, sql_builder) => {
             FROM        verb_entities
             INNER JOIN  generalization ON generalization.id_parent = verb_entities.id_entity
             UNION ALL 
-            SELECT      * 
+            SELECT      id_verb, 
+                        id_entity
             FROM        verb_entities
         )
         SELECT      * 

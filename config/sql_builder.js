@@ -1,5 +1,25 @@
 module.exports = (app, type ,name, sub_tables = null) => {
     const connection = require('./mysql');
+    const parameters = [];
+    if(sub_tables != null)
+    {
+        for(let i = 0; i < sub_tables.length; i++)
+        {
+            let field = ''
+            let table = ''
+            if(typeof sub_tables[i] === 'string')
+            {
+                field = name
+                table = sub_tables[i]
+            }
+            else
+            {
+                field = sub_tables[i].field
+                table = sub_tables[i].table
+            }
+            parameters.push({field, table})
+    }
+    }
     switch(type)
     {
         case 'table':
@@ -11,16 +31,20 @@ module.exports = (app, type ,name, sub_tables = null) => {
                        return result
                    }
                    // loop trough all sub_tables
-                   for(let i = 0; i < sub_tables.length; i++)
+                   for(let i = 0; i < parameters.length; i++)
                    {
-                       result[sub_tables[i]] = await new Promise((resolve, reject) =>{
-                           connection.query(`SELECT * FROM ${sub_tables[i]} WHERE ${sub_tables[i]}.id_${name} = ?`,
+                       result[parameters[i].table] = await new Promise((resolve, reject) =>{
+                           connection.query(`SELECT * FROM ${parameters[i].table} WHERE ${parameters[i].table}.id_${parameters[i].field} = ?`,
                            [id],
                            (err, rows) => {
                                if(err) reject(err);
-                               if(rows === undefined) resolve(null);
+                               if(rows === undefined) 
+                               {
+                                   resolve(null);
+                                   return
+                               }
                                rows.forEach(element => {
-                                   delete element[`id_${name}`];
+                                   delete element[`id_${parameters[i].field}`];
                                });
                                resolve(rows);
                                }
@@ -69,11 +93,11 @@ module.exports = (app, type ,name, sub_tables = null) => {
                    let id = 0
                    data = JSON.parse(JSON.stringify(req.body))
                    
-                   if(sub_tables != null)
+                   if(parameters != null)
                    {
-                       for(let i = 0; i < sub_tables.length; i++)
+                       for(let i = 0; i < parameters.length; i++)
                        {
-                           delete data[sub_tables[i]];
+                           delete data[parameters[i].table];
                        }
                    }
                    
@@ -113,17 +137,18 @@ module.exports = (app, type ,name, sub_tables = null) => {
                        return;
                    }
                    // loop trough all sub_tables
-                   for(let i = 0; i < sub_tables.length; i++)
+                   for(let i = 0; i < parameters.length; i++)
                    {
-                       for(let j = 0; j < req.body[sub_tables[i]].length; j++)
+                       for(let j = 0; j < req.body[parameters[i].table].length; j++)
                        {
-                           let row = req.body[sub_tables[i]][j];
+                           
+                           let row = req.body[parameters[i].table][j];
                            if(row.id == 0)
                            {
                                delete row.id
                                console.log(row)
-                               row[`id_${name}`] = id;
-                               connection.query(`INSERT INTO ${sub_tables[i]} SET ?`, row, (err, rows) => {
+                               row[`id_${parameters[i].field}`] = id;
+                               connection.query(`INSERT INTO ${parameters[i].table} SET ?`, row, (err, rows) => {
                                    if(err) throw err;
                                });
                            }
@@ -131,12 +156,12 @@ module.exports = (app, type ,name, sub_tables = null) => {
                            {
                                if(row.delete == true)
                                {
-                                   connection.query(`DELETE FROM ${sub_tables[i]} WHERE id = ?`, row.id, (err, rows) => {
+                                   connection.query(`DELETE FROM ${parameters[i].table} WHERE id = ?`, row.id, (err, rows) => {
                                        if(err) throw err;
                                    });
                                }else{
-                               row[`id_${name}`] = id;
-                               connection.query(`UPDATE ${sub_tables[i]} SET ? WHERE id = ?`, [row, row.id], (err, rows) => {
+                               row[`id_${parameters[i].field}`] = id;
+                               connection.query(`UPDATE ${parameters[i].table} SET ? WHERE id = ?`, [row, row.id], (err, rows) => {
                                    if(err) throw err;
                                })
                                }
@@ -146,9 +171,9 @@ module.exports = (app, type ,name, sub_tables = null) => {
                });
                //delete
                app.delete(`/${name}/:id`, (req, res) => {
-                   sub_tables.forEach(element => {
+                parameters.forEach(element => {
                        connection.query(
-                           `DELETE FROM ${element} WHERE id_${name} = ?`,
+                           `DELETE FROM ${element.table} WHERE id_${element.field} = ?`,
                            [req.params.id],
                            (err, result) => {
                                if (err) {
