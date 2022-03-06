@@ -1,3 +1,4 @@
 module.exports = (app, sql_builder) => {
-    sql_builder(app, 'table', 'verb');
+    sql_builder(app, 'table', 'verb',
+    sub_tables = ['verb_parameters']);
 }
