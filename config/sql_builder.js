@@ -101,7 +101,7 @@ module.exports = (app, type ,name, sub_tables = null) => {
                        }
                    }
                    
-                   if(req.body.id == 0){
+                   if(req.body.id == 0 || req.body.id == undefined){
                        delete data.id
                        id = await new Promise((resolve, reject) =>{
                        connection.query(
@@ -143,7 +143,7 @@ module.exports = (app, type ,name, sub_tables = null) => {
                        {
                            
                            let row = req.body[parameters[i].table][j];
-                           if(row.id == 0)
+                           if(row.id == 0 || row.id == undefined)
                            {
                                delete row.id
                                console.log(row)
