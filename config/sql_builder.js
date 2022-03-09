@@ -34,7 +34,7 @@ module.exports = (app, type ,name, sub_tables = null) => {
                    for(let i = 0; i < parameters.length; i++)
                    {
                        result[parameters[i].table] = await new Promise((resolve, reject) =>{
-                           connection.query(`SELECT * FROM ${parameters[i].table} WHERE ${parameters[i].table}.id_${parameters[i].field} = ?`,
+                           connection.query(`SELECT * FROM \`${parameters[i].table}\` WHERE \`${parameters[i].table}\`.id_${parameters[i].field} = ?`,
                            [id],
                            (err, rows) => {
                                if(err) reject(err);
@@ -55,7 +55,7 @@ module.exports = (app, type ,name, sub_tables = null) => {
                }
                app.get(`/${name}/:id`,(req, res) => {
                    connection.query(
-                       `SELECT * FROM ${name} WHERE id = ?`,
+                       `SELECT * FROM \`${name}\` WHERE id = ?`,
                        [req.params.id],
                        async (err, results) => {
                            if (err) {
@@ -75,7 +75,7 @@ module.exports = (app, type ,name, sub_tables = null) => {
                    );
                });
                app.get(`/${name}`,  (req, res) => {
-                   connection.query(`SELECT * FROM ${name}`, async (err, results) => {
+                   connection.query(`SELECT * FROM \`${name}\``, async (err, results) => {
                        if (err) {
                            res.send(err)
                            return;
@@ -105,7 +105,7 @@ module.exports = (app, type ,name, sub_tables = null) => {
                        delete data.id
                        id = await new Promise((resolve, reject) =>{
                        connection.query(
-                           `INSERT INTO ${name} SET ?`,
+                           `INSERT INTO \`${name}\` SET ?`,
                            data,
                            (err, result) => {
                                if (err) {
@@ -121,7 +121,7 @@ module.exports = (app, type ,name, sub_tables = null) => {
                    }else{
                        id = req.body.id
                        connection.query(
-                           `UPDATE ${name} SET ? WHERE id = ?`,
+                           `UPDATE \`${name}\` SET ? WHERE id = ?`,
                            [data, req.body.id],
                            (err, result) => {
                                if (err) {
@@ -148,7 +148,7 @@ module.exports = (app, type ,name, sub_tables = null) => {
                                delete row.id
                                console.log(row)
                                row[`id_${parameters[i].field}`] = id;
-                               connection.query(`INSERT INTO ${parameters[i].table} SET ?`, row, (err, rows) => {
+                               connection.query(`INSERT INTO \`${parameters[i].table}\` SET ?`, row, (err, rows) => {
                                    if(err) throw err;
                                });
                            }
@@ -156,12 +156,12 @@ module.exports = (app, type ,name, sub_tables = null) => {
                            {
                                if(row.delete == true)
                                {
-                                   connection.query(`DELETE FROM ${parameters[i].table} WHERE id = ?`, row.id, (err, rows) => {
+                                   connection.query(`DELETE FROM \`${parameters[i].table}\` WHERE id = ?`, row.id, (err, rows) => {
                                        if(err) throw err;
                                    });
                                }else{
                                row[`id_${parameters[i].field}`] = id;
-                               connection.query(`UPDATE ${parameters[i].table} SET ? WHERE id = ?`, [row, row.id], (err, rows) => {
+                               connection.query(`UPDATE \`${parameters[i].table}\` SET ? WHERE id = ?`, [row, row.id], (err, rows) => {
                                    if(err) throw err;
                                })
                                }
@@ -173,7 +173,7 @@ module.exports = (app, type ,name, sub_tables = null) => {
                app.delete(`/${name}/:id`, (req, res) => {
                 parameters.forEach(element => {
                        connection.query(
-                           `DELETE FROM ${element.table} WHERE id_${element.field} = ?`,
+                           `DELETE FROM \`${element.table}\` WHERE \`id_${element.field}\` = ?`,
                            [req.params.id],
                            (err, result) => {
                                if (err) {
@@ -184,7 +184,7 @@ module.exports = (app, type ,name, sub_tables = null) => {
                        );
                    });
                    connection.query(
-                       `DELETE FROM ${name} WHERE id = ?`,
+                       `DELETE FROM \`${name}\` WHERE id = ?`,
                        [req.params.id],
                        (err, result) => {
                            if (err) {
