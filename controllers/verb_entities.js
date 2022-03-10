@@ -1,6 +1,6 @@
 module.exports = (app, sql_builder) => {
-    sql_builder(app, 'query', 'verb_entities',`
-        WITH verb_entities AS
+    sql_builder(app, 'query', 'verb_entity',`
+        WITH verb_entity AS
         (
             WITH generalization AS (
                 WITH RECURSIVE gen AS 
@@ -20,15 +20,15 @@ module.exports = (app, sql_builder) => {
             )
             SELECT      id_verb, 
                         id_child id_entity 
-            FROM        verb_entities
-            INNER JOIN  generalization ON generalization.id_parent = verb_entities.id_entity
+            FROM        verb_entity
+            INNER JOIN  generalization ON generalization.id_parent = verb_entity.id_entity
             UNION ALL 
             SELECT      id_verb, 
                         id_entity
-            FROM        verb_entities
+            FROM        verb_entity
         )
         SELECT      * 
-        FROM        verb_entities 
+        FROM        verb_entity 
         ORDER BY    id_entity,
                     id_verb;`);
 }

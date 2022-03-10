@@ -1,4 +1,4 @@
-module.exports = (app, type ,name, sub_tables = null) => {
+module.exports = (app, type ,name, sub_tables = null, order_by = null) => {
     const connection = require('./mysql');
     const parameters = [];
     if(sub_tables != null)
@@ -75,7 +75,7 @@ module.exports = (app, type ,name, sub_tables = null) => {
                    );
                });
                app.get(`/${name}`,  (req, res) => {
-                   connection.query(`SELECT * FROM \`${name}\``, async (err, results) => {
+                   connection.query(`SELECT * FROM \`${name}\`${order_by != null ?(" ORDER BY "+order_by) : ''}`, async (err, results) => {
                        if (err) {
                            res.send(err)
                            return;
@@ -101,6 +101,7 @@ module.exports = (app, type ,name, sub_tables = null) => {
                        }
                    }
                    
+                   delete data.delete
                    if(req.body.id == 0 || req.body.id == undefined){
                        delete data.id
                        id = await new Promise((resolve, reject) =>{
@@ -143,9 +144,11 @@ module.exports = (app, type ,name, sub_tables = null) => {
                        {
                            
                            let row = req.body[parameters[i].table][j];
+                           
                            if(row.id == 0 || row.id == undefined)
                            {
                                delete row.id
+                               delete row.delete
                                console.log(row)
                                row[`id_${parameters[i].field}`] = id;
                                connection.query(`INSERT INTO \`${parameters[i].table}\` SET ?`, row, (err, rows) => {
@@ -159,9 +162,12 @@ module.exports = (app, type ,name, sub_tables = null) => {
                                    connection.query(`DELETE FROM \`${parameters[i].table}\` WHERE id = ?`, row.id, (err, rows) => {
                                        if(err) throw err;
                                    });
-                               }else{
-                               row[`id_${parameters[i].field}`] = id;
-                               connection.query(`UPDATE \`${parameters[i].table}\` SET ? WHERE id = ?`, [row, row.id], (err, rows) => {
+                               
+                                }else
+                               {
+                                    row[`id_${parameters[i].field}`] = id;
+                                    delete row.delete
+                                    connection.query(`UPDATE \`${parameters[i].table}\` SET ? WHERE id = ?`, [row, row.id], (err, rows) => {
                                    if(err) throw err;
                                })
                                }

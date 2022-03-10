@@ -1,6 +1,6 @@
 module.exports = (app, sql_builder) => {
-    sql_builder(app, 'query', 'verb_parameters',`
-    WITH verb_parameters AS 
+    sql_builder(app, 'query', 'verb_parameter',`
+    WITH verb_parameter AS 
     (
         WITH RECURSIVE gen AS 
         (
@@ -9,24 +9,25 @@ module.exports = (app, sql_builder) => {
             FROM 			generalization
             UNION ALL
             SELECT 			generalization.id_parent, 
-                           gen.id_child 
-            FROM 			gen
+                            gen.id_child 
+            FROM 		    gen
             INNER JOIN 	generalization ON gen.id_parent = generalization.id_child 
         )
-        SELECT 		verb_parameters.id_verb, 
-                        verb_parameters.name, 
+        SELECT 		    verb_parameter.id, 
+                        verb_parameter.id_verb, 
+                        verb_parameter.name, 
                         gen.id_child id_entity
-        FROM 			verb_parameters
-        INNER JOIN 	gen ON verb_parameters.id_entity = gen.id_parent
+        FROM 			verb_parameter
+        INNER JOIN 	    gen ON verb_parameter.id_entity = gen.id_parent
         UNION ALL
-        SELECT 		verb_parameters.id_verb, 
-                        verb_parameters.name, 
-                        verb_parameters.id_entity
-        FROM 			verb_parameters
+        SELECT 		    verb_parameter.id, 
+                        verb_parameter.id_verb, 
+                        verb_parameter.name, 
+                        verb_parameter.id_entity
+        FROM 			verb_parameter
     )
     SELECT      * 
-    FROM        verb_parameters 
+    FROM        verb_parameter 
     ORDER BY    id_verb,
-                \`name\`,
                 id_entity`);
 }
