@@ -1,3 +1,5 @@
+const { route } = require('express/lib/application');
+
 module.exports = (app, type ,name, sub_tables = null, order_by = null) => {
     const connection = require('./mysql');
     const parameters = [];
@@ -145,15 +147,18 @@ module.exports = (app, type ,name, sub_tables = null, order_by = null) => {
                            
                            let row = req.body[parameters[i].table][j];
                            
-                           if(row.id == 0 || row.id == undefined)
+                           if(row.id == 0 || row.id == undefined )
                            {
-                               delete row.id
-                               delete row.delete
-                               console.log(row)
-                               row[`id_${parameters[i].field}`] = id;
-                               connection.query(`INSERT INTO \`${parameters[i].table}\` SET ?`, row, (err, rows) => {
-                                   if(err) throw err;
-                               });
+                               if(!row.delete)
+                               {
+                                   delete row.id
+                                   delete row.delete
+                                   console.log(row)
+                                   row[`id_${parameters[i].field}`] = id;
+                                   connection.query(`INSERT INTO \`${parameters[i].table}\` SET ?`, row, (err, rows) => {
+                                       if(err) throw err;
+                                   });
+                               }
                            }
                            else
                            {
