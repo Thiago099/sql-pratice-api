@@ -27,8 +27,10 @@ module.exports = (app, sql_builder) => {
                         id_entity
             FROM        verb_entity
         )
-        SELECT      * 
+        SELECT      verb_entity.*,
+                    verb.id_group
         FROM        verb_entity 
+        INNER JOIN   verb ON verb.id = verb_entity.id_verb
         ORDER BY    id_entity,
                     id_verb;`);
 }
