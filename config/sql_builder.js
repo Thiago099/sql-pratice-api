@@ -153,7 +153,6 @@ module.exports = (app, type ,name, sub_tables = null, order_by = null) => {
                                {
                                    delete row.id
                                    delete row.delete
-                                   console.log(row)
                                    row[`id_${parameters[i].field}`] = id;
                                    connection.query(`INSERT INTO \`${parameters[i].table}\` SET ?`, row, (err, rows) => {
                                        if(err) throw err;
