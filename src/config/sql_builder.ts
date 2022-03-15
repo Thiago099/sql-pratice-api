@@ -1,8 +1,9 @@
 const { route } = require('express/lib/application');
 
-module.exports = (app, type ,name, sub_tables = null, order_by = null) => {
+
+module.exports = (app, type ,name, sub_tables: string[] | {field:string, table:string}[] | null = null, order_by = null) => {
     const connection = require('./mysql');
-    const parameters = [];
+    const parameters: {field:string, table:string}[] = [];
     if(sub_tables != null)
     {
         for(let i = 0; i < sub_tables.length; i++)
@@ -12,12 +13,12 @@ module.exports = (app, type ,name, sub_tables = null, order_by = null) => {
             if(typeof sub_tables[i] === 'string')
             {
                 field = name
-                table = sub_tables[i]
+                table = sub_tables[i] as string
             }
             else
             {
-                field = sub_tables[i].field
-                table = sub_tables[i].table
+                field = (sub_tables[i] as {field:string, table:string}).field
+                table = (sub_tables[i] as {field:string, table:string}).table
             }
             parameters.push({field, table})
     }
@@ -32,7 +33,6 @@ module.exports = (app, type ,name, sub_tables = null, order_by = null) => {
                    {
                        return result
                    }
-                   // loop trough all sub_tables
                    for(let i = 0; i < parameters.length; i++)
                    {
                        result[parameters[i].table] = await new Promise((resolve, reject) =>{
@@ -93,7 +93,7 @@ module.exports = (app, type ,name, sub_tables = null, order_by = null) => {
                });
                app.post(`/${name}/`,async (req, res) => {
                    let id = 0
-                   data = JSON.parse(JSON.stringify(req.body))
+                   const data = JSON.parse(JSON.stringify(req.body))
                    
                    if(parameters != null)
                    {
@@ -153,6 +153,7 @@ module.exports = (app, type ,name, sub_tables = null, order_by = null) => {
                                {
                                    delete row.id
                                    delete row.delete
+                                   console.log(row)
                                    row[`id_${parameters[i].field}`] = id;
                                    connection.query(`INSERT INTO \`${parameters[i].table}\` SET ?`, row, (err, rows) => {
                                        if(err) throw err;

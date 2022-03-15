@@ -23,7 +23,7 @@ module.exports = () => {
     console.log(sql_builder)
     const consign = require('consign');
     consign()
-        .include('controllers')
+        .include('src/controllers')
         .into(app, sql_builder);
 
     return app

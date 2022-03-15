@@ -5,3 +5,6 @@ npm install consign
 npm install body-parser
 npm install mysql
 npm install cors
+npm install --save-dev typescript 
+npm install @types/node --save-dev
+npm install --save-dev concurrently
